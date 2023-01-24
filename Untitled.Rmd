@@ -9,12 +9,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(plotly)
-df <- read.delim('data/90s_imdb.tsv',
-                 encoding = 'UTF-8',
-                 quote = '')
+library(dplyr)
+library(viridis)
 
-df <- read.csv('data/FIFA23_official_data.csv')
+df <- read.csv('data/pokemon.csv')
 ```
+
+El objetivo de esta notebook es aprender los pilares de `ggplot2` y
 
 # ggplot2
 
@@ -26,60 +27,225 @@ df <- read.csv('data/FIFA23_official_data.csv')
 
 -   **geom** - funciones que especifican el tipo de representación de los datos (puntos, líneas, boxplots...) y lo añaden al gráfico mediante capas
 
--   **data** - parámetro que indica el dataframe a partir del cual se construira el gráfico
+-   **data** - parámetro de que indica el dataframe a partir del cual se construira el gráfico
 
--   **aesthetics** - parámetro en el que se especifican qué variables del dataset se incluyen en el gráfico y cómo
+-   **aesthetics (aes)** - parámetro en el que se especifican qué variables del dataset se incluyen en el gráfico y cómo
 
-De esta forma, para construir un gráfico *scatter plot* con nuestro datset (df), en el que queramos colocar la media de votos (averageRating) en el eje x y el número de votos (numVotes) en el eje y, realizaríamos lo siguiente.
+De esta forma, para construir un gráfico *scatter plot* con nuestro datset, en el que queramos colocar los puntos de ataque (*attack*) en el eje x y los de defensa (*defense*) en el eje y, realizaríamos lo siguiente. Date cuenta de que por defecto orden ambos ejes de menor a mayor 🤔.
 
 ```{r ejemplo_1}
-ggplot(data=df[which(df$genres=='Romance'),], aes(x=, y=averageRating, color=runtimeMinutes)) +
+ggplot(data=df, aes(x=attack, y=defense)) +
   geom_point()
 ```
 
-**Nota:** Puedes especificar los datos y variable en las funciones geom directamente (útil para combinar diferentes visualizaciones, como veremos más adelante).
+Todo lo especificado en `ggplot()` es heredado por el resto de funciones, aunque es posible pasar directamente los datos y variables en las funciones geom que usemos (útil para combinar diferentes visualizaciones, como veremos más adelante 🤫).
 
 ```{r ejemplo_2}
 ggplot() +
-  geom_point(data=df, aes(x=averageRating, y=numVotes))
+  geom_point(data=df, aes(x=attack, y=defense))
 ```
 
-**Nota:** Es posible generar el gráfico en una variable para facilitar distintas pruebas ahorrando código.
+Es posible introducir en `aes()` también una tercera o cuarta variable para establecer tamaños o colores. Aunque en función del geom que estemos usando puede tener variaciones. Consulta para ello la ayuda de cada función 🧐.
+
+```{r help_geom}
+help('geom_point')
+```
+
+En base a lo que admite `geom_point()` voy a incluir la en color la defensa (*defense*) y en tamaño los puntos de vida (*hp*).
 
 ```{r ejemplo_3}
-df_plot <- ggplot(data=df, aes(x=averageRating, y=numVotes))
+ggplot(data=df, aes(x=attack, y=defense, color=base_total, size=hp)) +
+  geom_point()
+```
+
+Estos parámetros no tienen que estar asociados a una variable, pueden ser una constante. Por ejemplo, se puede indicar que el tamaño sea en todos los casos el mismo. Aunque en este caso es mejor indicarlo directamente en la función y fuera de `aes()`.
+
+```{r ejemplo_4}
+ggplot(data=df, aes(x=attack, y=defense)) +
+  geom_point(size=2, color='#ffc83d')
+```
+
+Algunos apuntes importantes antes de continuar:
+
+1.  Es posible generar el gráfico en una variable para facilitar distintas pruebas ahorrando código.
+
+```{r ejemplo_5}
+df_plot <- ggplot(data=df, aes(x=attack, y=defense, color=base_total))
 
 df_plot +
-  geom_point()
+  geom_point(size=2)
+```
+
+2.  Ten en cuenta que tipo de variable tienes, confundir variables discretas y continuas es común 🤕. Si tenemos un variable de tipo `integer` automáticamente la tomara como continua, pero si es discreta tenemos que modificarla antes.
+
+    ```{r ejemplo_6}
+    ggplot(data=df, aes(x=attack, y=defense, color=generation)) +
+      geom_point(size=2)
+
+    df$generation <- as.character(df$generation)
+    ggplot(data=df, aes(x=attack, y=defense, color=generation)) +
+      geom_point(size=2)
+    ```
+
+3.  Combinar dos gráficos (capas) es muy sencillo, solo tienes que añadir dos geoms. Pero ten en cuenta que variables quieres usar, pues es posible que tengas que especificarlas directamente dentro de estas.
+
+```{r ejemplo_7}
+ggplot(data=df, aes(x=attack, y=defense, color=generation)) +
+  geom_point(size=2)
 ```
 
 ## 2. geoms
 
-### 2.1. Líneas
+Ahora que ya conocemos un poco la forma de trabajar básica de `ggplot2`, vamos a conocer los principales gráficos que podemos hacer.
 
-### 2.2. Puntos
+### 2.1. Líneas - geom_line() y geom_smooth()
 
-### 2.1. Barras
+Podemos construir gráficos de lineas con `geom_line()`, de manera obligatoria es necesario indicar la posición de x e y. Por ejemplo, la evolución del ataque (*attack*) de los Pokémon por orden de posición en la Pokédex (*pokedex_number*), coloreando las líneas en base a la generación (*generation*).
 
-### 2.2. Histograma
+```{r ejemplo_8}
+ggplot(data=df, aes(x=pokedex_number, y=attack, color=generation)) +
+  geom_line()
+```
 
-### 2.3. Boxplot
+Es posible hacer lineas de regresión mediante `geom_smooth()`. Por defecto estimará el tipo de regresión que mejor se ajusta.
 
-### 2.4. Densidad
+```{r ejemplo_9}
+ggplot(data=df, aes(x=pokedex_number, y=attack, color=generation)) +
+  geom_line() +
+  geom_smooth()
+```
+
+Fíjate en el ejemplo, que agrupa por generación porque de base le digo que establezca dicha diferencia 🥴. Si quisiera una línea de regresión general, una opción sería hacer esa distinción de color específica de `geom_line()`.
+
+```{r ejemplo_10}
+ggplot(data=df, aes(x=pokedex_number, y=attack)) +
+  geom_line(aes(color=generation)) +
+  geom_smooth()
+```
+
+### 2.2. Puntos - geom_point()
+
+Esta opción ya la vimos antes, para hacer un *scatter plot* solo tenemos que usar `geom_point()` y de manera obligatoria incluir las posiciones de x e y. Por ejemplo, el ataque (*attack*) en x y el ataque especial (*sp_attack*) en y, coloreo si es legendario o no (*is_legendary*)*.*
+
+\*antes tengo que transformarla en discreta 🤫
+
+```{r ejemplo_11}
+df$is_legendary <- as.character(df$is_legendary)
+
+ggplot(data=df, aes(x=attack, y=sp_attack, color=is_legendary)) +
+  geom_point()
+```
+
+### 2.3. Barras - geom_bar() y geom_col()
+
+Aquí tenemos dos opciones. Por un lado `geom_bar()` permite generar barras de frecuencia de una variable. Solo necesitas especificar la variable en x o y. Por ejemplo, la frecuencia de Pokémon por primer tipo (*type1*).
+
+```{r ejemplo_12}
+ggplot(data=df, aes(x=type1)) +
+  geom_bar()
+```
+
+Mientras que en `geom_col()` en lugar de calcular la función la altura en base a la frecuencia, esta debe venir dada. Es necesario tanto x como y. Para este ejemplo voy a crear un dataframe nuevo con los promedios de ataque por tipo 1.
+
+```{r ejemplo_13}
+df_avg <- df[,c('type1', 'attack')] %>%
+  group_by(type1) %>%
+  summarise(attack = mean(attack))
+
+ggplot(data=df_avg, aes(x=type1, y=attack)) +
+  geom_col()
+```
+
+### 2.4. Histograma - geom_histogram()
+
+Realizar un histograma es muy sencillo 🙂 con la función `geom_histogram()`. Solo es necesario indicar la variable en x o y. Puedes establecer el número de bins con el parámetro `bins`. Por ejemplo, el histograma de velocidad (speed) de los Pokémon usando 25 bins.
+
+```{r ejemplo_14}
+ggplot(data=df, aes(x=speed)) +
+  geom_histogram(bins=25)
+```
+
+### 2.5. Boxplot
+
+Los diagramas de cajas y bigotes son un clásico y aquí puedes hacerlo con `geom_boxplot()` solo necesitas indicar la variable en x o y. Aunque ojo 👁️‍🗨️ puedes dividir esta variable de acuerdo a una segunda. Por ejemplo, el ataque especial (*sp_attack*) por primer tipo (*type1*).
+
+```{r ejemplo_15}
+ggplot(data=df, aes(x=type1, y=sp_attack)) +
+  geom_boxplot()
+```
 
 ## 3. Personalización
 
-```{r ejemplo_4}
-ggplot() +
-  geom_point(data=df, aes(x=averageRating, color=runtimeMinutes, y=startYear))
+### 3.1. Etiquetas
+
+Como te estarás dando cuenta, en gráficos como los de puntos no aparecen las etiquetas con los nombres. Introducirlo es muy sencillo con `geom_text()` indicando en el parámetro `label` la variable que va a salir junto al punto. Por ejemplo, incluir en gráfico del inicio los nombres de los Pokémon con más de 130 de ataque y defensa (para que sea legible 😵).
+
+```{r ejemplo_16}
+ggplot(data=df, aes(x=attack, y=defense, color=base_total)) +
+  geom_point() +
+  geom_text(data=df[which(df$attack>130 & df$defense>130),], aes(x=attack, y=defense, label=name))
 ```
 
-## Including Plots
+### 3.2. Colores
 
-You can also embed plots, for example:
+Podemos establecer escalas de color de forma manual una vez indicado que esta escala viene dada por una variable. En el caso de variables continuas podemos usar `scale_color_gradient()` para establecer un degradado de color.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r ejemplo_17}
+ggplot(data=df, aes(x=attack, y=defense, color=base_total)) +
+  geom_point() +
+  scale_color_gradient(low='blue', high='red')
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+De hecho, existen muchos paquetes complementarios a `ggplot2` que añaden muchas posibilidades. Por ejemplo, con `viridis` podemos usar la tradicional escala de colores con la función `scale_color_viridis()`.
+
+```{r ejemplo_18}
+ggplot(data=df, aes(x=attack, y=defense, color=base_total)) +
+  geom_point() +
+  scale_color_viridis()
+```
+
+En el caso de variable discretas es muy sencillo, con `scale_color_manual()` podemos hacerlo simplemente indicando en `values` a que valor corresponde cada color.
+
+```{r ejemplo_19}
+ggplot(data=df, aes(x=attack, y=sp_attack, color=is_legendary)) +
+  geom_point() +
+  scale_color_manual(values=c('0'='#57a1d1', '1'='#bb3f25'))
+```
+
+### 3.3. Nombres
+
+Por si no te diste cuenta, estos gráficos incluyen por defecto los nombres de las variables en los ejes 🙃. Este problema se soluciona rápidamente con `labs()` indicando para cada variable el nombre exacto que queremos, e incluso podemos introducir un título.
+
+```{r ejemplo_20}
+ggplot(data=df, aes(x=attack, y=sp_attack, color=is_legendary)) +
+  geom_point() +
+  scale_color_manual(values=c('0'='#57a1d1', '1'='#bb3f25')) +
+  labs(x='Ataque', y='Ataque especial', title='Scatter plot de ataque y ataque especial de los Pokémon', color='Legendario')
+```
+
+### 3.4. Temas
+
+A tu gráfico ya le queda poco para ser pro 🥳. Puedes usar alguno de los temas que `ggplot2` incluye para mejorar el estilo del gráfico. Yo voy a usar `theme_classic()`.
+
+```{r ejemplo_21}
+ggplot(data=df, aes(x=attack, y=sp_attack, color=is_legendary)) +
+  geom_point() +
+  scale_color_manual(values=c('0'='#57a1d1', '1'='#bb3f25')) +
+  labs(x='Ataque', y='Ataque especial', title='Scatter plot de ataque y ataque especial de los Pokémon', color='Legendario') +
+  theme_classic()
+```
+
+### 3.5. Editor visual
+
+```{r ejemplo_21}
+plot_ly(data=df, x=~attack, y=~sp_attack, split=~is_legendary, type='scatter', mode='markers')
+```
+
+```{r ejemplo_21}
+ggplotly(ggplot(data=df, aes(x=attack, y=sp_attack, color=is_legendary, text=name)) +
+  geom_point())
+
+
+ggplotly(ggplot(data=df, aes(x=speed)) +
+  geom_histogram(bins=25))
+```
