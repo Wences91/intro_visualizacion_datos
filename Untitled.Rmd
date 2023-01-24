@@ -1,0 +1,85 @@
+---
+title: "Untitled"
+author: "Wenceslao Arroyo-Machado"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(plotly)
+df <- read.delim('data/90s_imdb.tsv',
+                 encoding = 'UTF-8',
+                 quote = '')
+
+df <- read.csv('data/FIFA23_official_data.csv')
+```
+
+# ggplot2
+
+## 1. Introducción
+
+**ggplot2** es un potente paquete para la elaboración de gráficos en R y que funciona a través de *pipelines* (el operador pipeline es +). Dentro de este flujo de trabajo existen varias funciones y parámetros que son fundamentales para la elaboración de un gráfico:
+
+-   **ggplot()** - función base para la construcción del gráfico
+
+-   **geom** - funciones que especifican el tipo de representación de los datos (puntos, líneas, boxplots...) y lo añaden al gráfico mediante capas
+
+-   **data** - parámetro que indica el dataframe a partir del cual se construira el gráfico
+
+-   **aesthetics** - parámetro en el que se especifican qué variables del dataset se incluyen en el gráfico y cómo
+
+De esta forma, para construir un gráfico *scatter plot* con nuestro datset (df), en el que queramos colocar la media de votos (averageRating) en el eje x y el número de votos (numVotes) en el eje y, realizaríamos lo siguiente.
+
+```{r ejemplo_1}
+ggplot(data=df[which(df$genres=='Romance'),], aes(x=, y=averageRating, color=runtimeMinutes)) +
+  geom_point()
+```
+
+**Nota:** Puedes especificar los datos y variable en las funciones geom directamente (útil para combinar diferentes visualizaciones, como veremos más adelante).
+
+```{r ejemplo_2}
+ggplot() +
+  geom_point(data=df, aes(x=averageRating, y=numVotes))
+```
+
+**Nota:** Es posible generar el gráfico en una variable para facilitar distintas pruebas ahorrando código.
+
+```{r ejemplo_3}
+df_plot <- ggplot(data=df, aes(x=averageRating, y=numVotes))
+
+df_plot +
+  geom_point()
+```
+
+## 2. geoms
+
+### 2.1. Líneas
+
+### 2.2. Puntos
+
+### 2.1. Barras
+
+### 2.2. Histograma
+
+### 2.3. Boxplot
+
+### 2.4. Densidad
+
+## 3. Personalización
+
+```{r ejemplo_4}
+ggplot() +
+  geom_point(data=df, aes(x=averageRating, color=runtimeMinutes, y=startYear))
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
