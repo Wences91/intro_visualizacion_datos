@@ -45,7 +45,7 @@ head(df)
 
 ## Introducción
 
-**ggplot2** es un potente paquete para la elaboración de gráficos en R y que funciona a través de *pipelines* (el operador pipeline es `+`\`). Dentro de este flujo de trabajo existen varias funciones y parámetros que son fundamentales para la elaboración de un gráfico:
+**ggplot2** es un potente paquete para la elaboración de gráficos en R y que funciona a través de *pipelines* (el operador pipeline es `+`). Dentro de este flujo de trabajo existen varias funciones y parámetros que son fundamentales para la elaboración de un gráfico:
 
 -   **ggplot()** - función base para la construcción del gráfico
 
@@ -58,7 +58,7 @@ head(df)
 De esta forma, para construir por ejemplo un gráfico *scatter plot* con nuestro datset de Pokémon en el que queremos colocar los puntos de ataque (*attack*) en el eje x y los de defensa (*defense*) en el eje y, realizaríamos lo siguiente. Date cuenta de que por defecto ordena ambos ejes de menor a mayor 🤔.
 
 ```{r ejemplo_1}
-ggplot(data=df, aes(x=attack, y=defense)) +
+ggplot(data=df, aes(x=sp_attack, y=defense)) +
   geom_point()
 ```
 
@@ -66,7 +66,8 @@ Todo lo especificado en `ggplot()` es heredado por el resto de funciones, aunque
 
 ```{r ejemplo_2}
 ggplot() +
-  geom_point(data=df, aes(x=attack, y=defense))
+  geom_point(data=df, aes(x=attack, y=defense)) +
+  geom_line()
 ```
 
 Es posible introducir en `aes()` también una tercera o cuarta variable para establecer tamaños o colores. Aunque en función del geom que estemos usando puede tener variaciones. Consulta para ello la ayuda de cada función 🧐.
@@ -387,7 +388,7 @@ ggplotly(gg2,
 
 ```{r api_plotly}
 Sys.setenv('plotly_username'='Wences91')
-Sys.setenv('plotly_api_key'='LaPmMF2lt51nQFyqE5j4')
+Sys.setenv('plotly_api_key'='LZck6J3QA3df6eMwcXxi')
 ```
 
 Tras ello usa la función `api_create()` para crearlo [👌](https://emojipedia.org/).
@@ -397,3 +398,7 @@ api_create(ggplotly(gg2,
          tooltip = 'text'),
          filename='Gráfico Pokémon #yosigopublicando')
 ```
+
+<hr>
+
+<center>Notebook y datos disponibles en [**GitHub**](https://github.com/Wences91/intro_visualizacion_datos)</center>
